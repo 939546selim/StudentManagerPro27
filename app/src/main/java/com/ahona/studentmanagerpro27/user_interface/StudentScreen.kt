@@ -25,6 +25,8 @@ import com.ahona.studentmanagerpro27.viewmodel.StudentViewModel
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.AlertDialog
+import com.ahona.studentmanagerpro27.data.StudentOperationResult
+import androidx.compose.material3.TextButton
 
 @Composable
 fun StudentScreen(viewModel: StudentViewModel) {
@@ -102,7 +104,62 @@ fun StudentScreen(viewModel: StudentViewModel) {
             Text("Save Student")
         }
 
+
+//        when (val result = viewModel.operationResult) {
+//            is StudentOperationResult.Success -> {
+//                Text("Operation successful!")
+//            }
+//
+//            is StudentOperationResult.Error -> {
+//                Text("Error: ${result.message}")
+//            }
+//
+//            null -> Unit
+//        }
+
+
+        when (val result = viewModel.operationResult) {
+            is StudentOperationResult.Success -> {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Operation successful!")
+
+                    TextButton(
+                        onClick = {
+                            viewModel.clearOperationResult()
+                        }
+                    ) {
+                        Text("Dismiss")
+                    }
+                }
+            }
+
+            is StudentOperationResult.Error -> {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Error: ${result.message}")
+
+                    TextButton(
+                        onClick = {
+                            viewModel.clearOperationResult()
+                        }
+                    ) {
+                        Text("Dismiss")
+                    }
+                }
+            }
+
+            null -> Unit
+        }
+
+
         Text("Student List")
+
+
 
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp)
