@@ -25,8 +25,10 @@ import com.ahona.studentmanagerpro27.viewmodel.StudentViewModel
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import com.ahona.studentmanagerpro27.data.StudentOperationResult
 import androidx.compose.material3.TextButton
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun StudentScreen(viewModel: StudentViewModel) {
@@ -38,6 +40,11 @@ fun StudentScreen(viewModel: StudentViewModel) {
     var studentToDelete by remember {
         mutableStateOf<Student?>(null)
     }
+    var validationMessage by remember {
+        mutableStateOf<String?>(null)
+    }
+
+
 
     val students by viewModel.students.collectAsState()
 
@@ -72,17 +79,60 @@ fun StudentScreen(viewModel: StudentViewModel) {
 
         Button(
             onClick = {
+//                val parsedAge = age.toIntOrNull()
+//
+//                if (
+////                    name.isNotBlank() &&
+////                    parsedAge != null &&
+////                    email.isNotBlank()
+//                    name.isNotBlank() &&
+//                    parsedAge != null &&
+//                    parsedAge > 0 &&
+//                    android.util.Patterns.EMAIL_ADDRESS
+//                        .matcher(email.trim())
+//                        .matches()
+//                ) {
+//                    val student = Student(
+//                        id = editingStudentId ?: 0,
+//                        name = name.trim(),
+//                        age = parsedAge,
+//                        email = email.trim()
+//                    )
+//
+//                    if (editingStudentId == null) {
+//                        viewModel.addStudent(student)
+//                    } else {
+//                        viewModel.updateStudent(student)
+//                    }
+//
+//                    name = ""
+//                    age = ""
+//                    email = ""
+//                    editingStudentId = null
+//                }
                 val parsedAge = age.toIntOrNull()
 
-                if (
-                    name.isNotBlank() &&
-                    parsedAge != null &&
-                    email.isNotBlank()
-                ) {
+                validationMessage = when {
+                    name.isBlank() ->
+                        "Please enter student name"
+
+                    parsedAge == null || parsedAge <= 0 ->
+                        "Please enter a valid age"
+
+                    !android.util.Patterns.EMAIL_ADDRESS
+                        .matcher(email.trim())
+                        .matches() ->
+                        "Please enter a valid email"
+
+                    else -> null
+                }
+
+                if (validationMessage == null) {
+                    viewModel.clearOperationResult()
                     val student = Student(
                         id = editingStudentId ?: 0,
                         name = name.trim(),
-                        age = parsedAge,
+                        age = parsedAge!!,
                         email = email.trim()
                     )
 
@@ -96,12 +146,44 @@ fun StudentScreen(viewModel: StudentViewModel) {
                     age = ""
                     email = ""
                     editingStudentId = null
+                    validationMessage = null
                 }
             },
 
 
             ) {
-            Text("Save Student")
+            Text(
+                if(editingStudentId==null){
+                    "Save student"
+                }else{
+                    "Update student"
+                }
+            )
+        }
+
+        if(editingStudentId != null){
+            TextButton(
+                onClick = {
+                    editingStudentId==null
+                    name = ""
+                    age = ""
+                    email = ""
+                    validationMessage = null
+
+                    viewModel.clearOperationResult()
+                }
+            ) {
+                Text("Cancell Edit")
+            }
+
+        }
+
+
+        validationMessage?.let { message ->
+            Text(
+                text = message,
+                color = MaterialTheme.colorScheme.error
+            )
         }
 
 
