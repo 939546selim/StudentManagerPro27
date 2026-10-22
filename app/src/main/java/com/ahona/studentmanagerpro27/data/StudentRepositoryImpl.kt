@@ -37,6 +37,21 @@ class StudentRepositoryImpl(
         return studentDao.getAllStudents()
     }
 
+    override fun getStudentsSortedByName(): Flow<List<Student>> {
+        return studentDao.getStudentsSortedByName()
+    }
+
+    override fun getStudentsByMinimumAge(minAge: Int): Flow<List<Student>> {
+        return studentDao.getStudentsByMinimumAge(minAge)
+
+    }
+
+    override fun getStudentsByExactAge(
+        age: Int
+    ): Flow<List<Student>> {
+        return studentDao.getStudentsByExactAge(age)
+    }
+
     override suspend fun insertStudent(
         student: Student
     ): StudentOperationResult {

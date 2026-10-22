@@ -28,7 +28,11 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import com.ahona.studentmanagerpro27.data.StudentOperationResult
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.getValue
+
 
 @Composable
 fun StudentScreen(viewModel: StudentViewModel) {
@@ -44,9 +48,67 @@ fun StudentScreen(viewModel: StudentViewModel) {
         mutableStateOf<String?>(null)
     }
 
+    var isSortedByName by remember {
+        mutableStateOf(false)
+    }
+
+    var minimumAgeText by remember {
+        mutableStateOf("")
+    }
+
+    var exactAgeText by remember { mutableStateOf("") }
+
+
+
+
 
 
     val students by viewModel.students.collectAsState()
+
+    val searchQuery by viewModel.searchQuery.collectAsState()
+
+    val filteredStudents by viewModel.filteredStudents.collectAsState()
+
+    val studentsSortedByName by
+    viewModel.studentsSortedByName.collectAsState()
+
+    val studentsByMinimumAge by
+    viewModel.studentsByMinimumAge.collectAsState()
+
+    val studentsByExactAge by
+    viewModel.studentsByExactAge.collectAsState()
+
+
+
+
+    val visibleStudents = when {
+        exactAgeText.isNotBlank() ->
+            studentsByExactAge.filter { student ->
+                student.name.contains(
+                    searchQuery,
+                    ignoreCase = true
+                )
+            }
+        minimumAgeText.isNotBlank() ->
+            studentsByMinimumAge.filter { student ->
+                student.name.contains(
+                    searchQuery,
+                    ignoreCase = true
+                )
+            }
+
+        isSortedByName ->
+            studentsSortedByName.filter { student ->
+                student.name.contains(
+                    searchQuery,
+                    ignoreCase = true
+                )
+            }
+
+        else -> filteredStudents
+    }
+
+
 
     Column(
         modifier = Modifier
@@ -79,37 +141,7 @@ fun StudentScreen(viewModel: StudentViewModel) {
 
         Button(
             onClick = {
-//                val parsedAge = age.toIntOrNull()
-//
-//                if (
-////                    name.isNotBlank() &&
-////                    parsedAge != null &&
-////                    email.isNotBlank()
-//                    name.isNotBlank() &&
-//                    parsedAge != null &&
-//                    parsedAge > 0 &&
-//                    android.util.Patterns.EMAIL_ADDRESS
-//                        .matcher(email.trim())
-//                        .matches()
-//                ) {
-//                    val student = Student(
-//                        id = editingStudentId ?: 0,
-//                        name = name.trim(),
-//                        age = parsedAge,
-//                        email = email.trim()
-//                    )
-//
-//                    if (editingStudentId == null) {
-//                        viewModel.addStudent(student)
-//                    } else {
-//                        viewModel.updateStudent(student)
-//                    }
-//
-//                    name = ""
-//                    age = ""
-//                    email = ""
-//                    editingStudentId = null
-//                }
+
                 val parsedAge = age.toIntOrNull()
 
                 validationMessage = when {
@@ -187,17 +219,6 @@ fun StudentScreen(viewModel: StudentViewModel) {
         }
 
 
-//        when (val result = viewModel.operationResult) {
-//            is StudentOperationResult.Success -> {
-//                Text("Operation successful!")
-//            }
-//
-//            is StudentOperationResult.Error -> {
-//                Text("Error: ${result.message}")
-//            }
-//
-//            null -> Unit
-//        }
 
 
         when (val result = viewModel.operationResult) {
@@ -238,39 +259,144 @@ fun StudentScreen(viewModel: StudentViewModel) {
             null -> Unit
         }
 
+        if (viewModel.isLoading) {
+            Text(text = "Loading students...")
+        }
+
+
+
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { query ->
+                viewModel.updateSearchQuery(query)
+            },
+            label = { Text("Search student by name") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = minimumAgeText,
+            onValueChange = { text ->
+                minimumAgeText = text
+                viewModel.updateMinimumAge(
+                    text.toIntOrNull() ?: 0
+                )
+            },
+            label = { Text("Search by Minimum age") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = exactAgeText,
+            onValueChange = { text ->
+                exactAgeText = text.filter { it.isDigit() }
+
+                viewModel.updateExactAge(
+                    exactAgeText.toIntOrNull()
+                )
+            },
+            label = {
+                Text("Search by Exact Age")
+            },
+            placeholder = {
+                Text("Enter exact age")
+            },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+//        Button(
+//            onClick = {
+//                // Sorting UI will be connected in the next task
+//            }
+//        ) {
+//            Text("Sort by Name (A–Z)")
+//        }
+
+        Button(
+             onClick = {
+                isSortedByName = !isSortedByName
+            }
+        ) {
+            Text(
+                if (isSortedByName) {
+                    "Show Original List"
+                } else {
+                    "Sort by Name (A–Z)"
+                }
+            )
+        }
+
 
         Text("Student List")
+
+//        if (students.isEmpty()) {
+//            Text("No students yet. Add your first student!",   color = Color(0xFF2E7D32),
+//                fontWeight = FontWeight.Bold
+//            )
+//
+//        }
+
+//        val visibleStudents = when {
+//            minimumAgeText.isNotBlank() ->
+//                studentsByMinimumAge.filter { student ->
+//                    student.name.contains(
+//                        searchQuery,
+//                        ignoreCase = true
+//                    )
+//                }
+//
+//            isSortedByName ->
+//                studentsSortedByName.filter { student ->
+//                    student.name.contains(
+//                        searchQuery,
+//                        ignoreCase = true
+//                    )
+//                }
+//
+//            else -> filteredStudents
+//        }
+
+
+
+//        if (visibleStudents.isEmpty()) {
+//            Text(
+//                if (searchQuery.isBlank()) {
+//                    "No students yet. Add your first student!"
+//                } else {
+//                    "No matching students found."
+//                },
+//                color = Color(0xFF2E7D32),
+//                fontWeight = FontWeight.Bold
+//            )
+//        }
+
+        if (visibleStudents.isEmpty()) {
+            Text(
+                text = if (
+                    students.isEmpty() &&
+                    searchQuery.isBlank() &&
+                    minimumAgeText.isBlank()
+                ) {
+                    "No students yet. Add your first student!"
+                } else {
+                    "No matching students found."
+                },
+                color = Color(0xFF2E7D32),
+                fontWeight = FontWeight.Bold
+            )
+        }
 
 
 
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-//            items(students, key = { it.id }) { student ->
-//                Column(modifier = Modifier.fillMaxWidth()) {
-//                    Text("Name: ${student.name}")
-//                    Text("Age: ${student.age}")
-//                    Text("Email: ${student.email}")
-//                }
-//            }
-            items(students, key = { it.id }) { student ->
-//                Column(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .clickable {
-//                            editingStudentId = student.id
-//                            name = student.name
-//                            age = student.age.toString()
-//                            email = student.email
-//                        }
-//                        .padding(8.dp)
-//                ) {
-//                    Text("Name: ${student.name}")
-//                    Text("Age: ${student.age}")
-//                    Text("Email: ${student.email}")
-//
-//                    Text("Tap to Edit")
-//                }
+
+            items(items = visibleStudents, key = { it.id }) { student ->
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -293,20 +419,7 @@ fun StudentScreen(viewModel: StudentViewModel) {
                         Text("Tap to Edit")
                     }
 
-//                    TextButton(
-//                        onClick = {
-//                            viewModel.deleteStudent(student)
-//
-//                            if (editingStudentId == student.id) {
-//                                editingStudentId = null
-//                                name = ""
-//                                age = ""
-//                                email = ""
-//                            }
-//                        }
-//                    ) {
-//                        Text("Delete")
-//                    }
+
                     TextButton(
                         onClick = {
                             studentToDelete = student

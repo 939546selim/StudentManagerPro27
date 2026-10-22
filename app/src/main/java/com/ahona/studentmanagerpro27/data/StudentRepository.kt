@@ -21,6 +21,12 @@ interface StudentRepository {
 
     fun getAllStudents(): Flow<List<Student>>
 
+    fun getStudentsSortedByName(): Flow<List<Student>>
+
+    fun getStudentsByMinimumAge(minAge: Int): Flow<List<Student>>
+
+    fun getStudentsByExactAge(age: Int): Flow<List<Student>>
+
     suspend fun insertStudent(
         student: Student
     ): StudentOperationResult

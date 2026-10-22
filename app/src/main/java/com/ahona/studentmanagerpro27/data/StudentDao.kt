@@ -20,6 +20,17 @@ interface  StudentDao {
     @Query("SELECT * FROM students ORDER BY id DESC")
     fun getAllStudents(): Flow<List<Student>>
 
+    @Query("SELECT * FROM students ORDER BY name ASC")
+    fun getStudentsSortedByName(): Flow<List<Student>>
+
+    @Query("SELECT * FROM students WHERE age >= :minAge ORDER BY age ASC")
+    fun getStudentsByMinimumAge(minAge: Int): Flow<List<Student>>
+
+    @Query(
+        "SELECT * FROM students WHERE age = :age ORDER BY name ASC"
+    )
+    fun getStudentsByExactAge(age: Int): Flow<List<Student>>
+
     @Delete
     suspend fun deleteStudent(student: Student)
 }
